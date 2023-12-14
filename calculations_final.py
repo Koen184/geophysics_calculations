@@ -102,4 +102,5 @@ for value in integral_results:
 # PRINT AND SAVE RESULTS
 
 print(terrain_correction)
+print(sum(terrain_correction))
 print('\nNumber of points: ', len(terrain_correction))
