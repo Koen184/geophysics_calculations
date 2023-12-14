@@ -7,6 +7,39 @@ import math
 from matplotlib.patches import Circle, Rectangle
 
 
+# FUNCTION _ RATIO
+
+def intersection_area_ratio(data_X, data_Y, nmt_X, nmt_Y, radius, square_size):
+    half_radius = radius / 2
+    half_square = square_size / 2
+    area = square_size ** 2
+
+    data_top_left = (data_X - half_radius, data_Y + half_radius)
+    data_bottom_right = (data_X + half_radius, data_Y - half_radius)
+
+    nmt_top_left = (nmt_X - half_square, nmt_Y + half_square)
+    nmt_bottom_right = (nmt_X + half_square, nmt_Y - half_square)
+
+    if (data_bottom_right[0] < nmt_top_left[0] or data_top_left[0] > nmt_bottom_right[0] or
+            data_bottom_right[1] > nmt_top_left[1] or data_top_left[1] < nmt_bottom_right[1]):
+        return 0
+
+    overlap_left = max(data_top_left[0], nmt_top_left[0])
+    overlap_right = min(data_bottom_right[0], nmt_bottom_right[0])
+    overlap_top = min(data_top_left[1], nmt_top_left[1])
+    overlap_bottom = max(data_bottom_right[1], nmt_bottom_right[1])
+
+    overlap_width = overlap_right - overlap_left
+    overlap_height = overlap_top - overlap_bottom
+
+    overlap_area = overlap_width * overlap_height
+
+    ratio = overlap_area / area
+    print(ratio)
+
+    return ratio
+
+
 # FUNCTIONS - equations used in main integral equation
 
 def distance(x, y, z):
@@ -45,6 +78,7 @@ Z_nmt = df_NMT['Hnorm'].tolist()
 p_density = 2670  # kg / m * m * m
 G = 6.67430 * (10 ** (-11))
 cuboid_size = 1000  # m
+circle_radius = 1200  # m
 
 # OTHERS
 
@@ -60,7 +94,7 @@ for i in range(number_of_points):
     for j in range(number_of_grids):
         distance_check = np.sqrt((X_nmt[j] - X_data[i]) ** 2 + (Y_nmt[j] - Y_data[i]) ** 2 + (Z_nmt[j] - Z_data[i]) ** 2)
 
-        if distance_check <= 1200:
+        if distance_check <= (circle_radius + (cuboid_size * np.sqrt(2)) / 2):
             X_1 = abs(X_nmt[j] - X_data[i]) - cuboid_size / 2
             X_2 = abs(X_nmt[j] - X_data[i]) + cuboid_size / 2
             Y_1 = abs(Y_nmt[j] - Y_data[i]) - cuboid_size / 2
@@ -76,16 +110,18 @@ for i in range(number_of_points):
             point = equation(X_2, Y_2, Z_2) - equation(X_1, Y_2, Z_2) - equation(X_2, Y_1, Z_2) + equation(X_1, Y_1, Z_2) - \
                     equation(X_2, Y_2, Z_1) + equation(X_1, Y_2, Z_1) + equation(X_2, Y_1, Z_1) - equation(X_1, Y_1, Z_1)
 
-            integral_point = integral_point + point
+            ratio_value = intersection_area_ratio(X_data[i], Y_data[i], X_nmt[j], Y_nmt[j], circle_radius, cuboid_size)
+
+            integral_point = integral_point + point * ratio_value
 
             plt.scatter(X_nmt[j], Y_nmt[j], color='red')
-            square = Rectangle((X_nmt[j] - 500, Y_nmt[j] - 500), 1000, 1000, fill=False, color='green')
+            square = Rectangle((X_nmt[j] - cuboid_size / 2, Y_nmt[j] - cuboid_size / 2), cuboid_size, cuboid_size, fill=False, color='green')
             plt.gca().add_patch(square)
 
     integral_results.append(integral_point)
 
 for i in range(len(X_data)):
-    circle = Circle((X_data[i], Y_data[i]), 1200, fill=False, color='blue')
+    circle = Circle((X_data[i], Y_data[i]), circle_radius, fill=False, color='blue')
     plt.gca().add_patch(circle)
 
 plt.scatter(X_data, Y_data, color='blue')
