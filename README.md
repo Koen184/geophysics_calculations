@@ -1,2 +1,3 @@
 # geophysics_calculations
-A script for performing more difficult calculations as part of the Fundamentals of Geophysics course.
+A script for performing more difficult calculations (terrain reduction calculation)
+Part of the Fundamentals of Geophysics course.
