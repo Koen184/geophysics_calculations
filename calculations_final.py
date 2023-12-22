@@ -108,7 +108,7 @@ print('\nNumber of points: ', len(terrain_correction))
 # SAVE TO FILE
 # It's easier to save in txt and later copy to Excel with results
 
-file_name = 'results_v2.txt'
+file_name = 'results.txt'
 
 with open(file_name, 'w') as file:
     for result in terrain_correction:
